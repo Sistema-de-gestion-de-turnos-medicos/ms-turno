@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  mysql-turno:
+    image: mariadb:11
+    container_name: mysql-turno
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-123}
+      MARIADB_DATABASE: service_turno_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - turno_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - turno-net
+
+  ms-turno:
+    build: .
+    container_name: ms-turno
+    restart: unless-stopped
+    depends_on:
+      mysql-turno:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:mariadb://mysql-turno:3306/service_turno_db
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-123}
+      PORT: 8086
+      MEDICO_SERVICE_URL: ${MEDICO_SERVICE_URL:-http://ms-medico:8087}
+    ports:
+      - "8086:8086"
+    networks:
+      - turno-net
+
+networks:
+  turno-net:
+    driver: bridge
+
+volumes:
+  turno_mysql_data:
