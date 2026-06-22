@@ -3,14 +3,12 @@ server:
 
 spring:
   application:
-    name: turno-service
-
+    name: ms-turno
   datasource:
     url: jdbc:mariadb://localhost:3306/service_turno_db
     username: root
     password: 123
     driver-class-name: org.mariadb.jdbc.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -40,6 +38,15 @@ springdoc:
     enabled: true
     path: /doc/swagger-ui.html
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
 ---
 
 spring:
@@ -63,6 +70,7 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
   instance:
     prefer-ip-address: true
-
